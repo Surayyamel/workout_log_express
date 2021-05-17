@@ -1,13 +1,35 @@
 const express = require('express');
 const cors = require('cors');
 const pool = require('./db');
+const passport = require('passport');
+const cookieSession = require('cookie-session');
+const isLoggedIn = require('./middleware/isLoggedIn');
+// Passport config
+require('./passport');
 
 const app = express();
-app.use(cors(), express.json());
 
-app.get('/workout/:id/:date', async (req, res) => {
+app.use(
+    cookieSession({
+        name: 'workout-log-session',
+        maxAge: 24 * 60 * 60 * 1000,
+        keys: ['randomstring'],
+    })
+);
+
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use(
+    cors({ credentials: true, origin: 'http://localhost:3000' }),
+    express.json()
+);
+
+app.get('/workout/:id/:date', isLoggedIn, async (req, res) => {
     try {
-        const { id, date } = req.params;
+        const { date } = req.params;
+        const id = req.user.id;
 
         const exerciseReps = await pool.query(
             `
@@ -61,7 +83,7 @@ app.get('/workout/:id/:date', async (req, res) => {
     }
 });
 
-app.post('/workout/:id/:date', async (req, res) => {
+app.post('/workout/:id/:date', isLoggedIn, async (req, res) => {
     try {
         const { id, date } = req.params;
 
@@ -112,7 +134,7 @@ app.post('/workout/:id/:date', async (req, res) => {
     }
 });
 
-app.put('/workout/:id/:date', async (req, res) => {
+app.put('/workout/:id/:date', isLoggedIn, async (req, res) => {
     try {
         const { id, exerciseName, numberOfSets } = req.body;
 
@@ -231,23 +253,58 @@ app.put('/workout/:id/:date', async (req, res) => {
     }
 });
 
-app.delete('/workout/:id', async (req, res) => {
+app.delete('/workout/:id', isLoggedIn, async (req, res) => {
     const { id } = req.body;
     try {
         await pool.query(
             `
                 DELETE FROM exercise
                 WHERE id = $1
-            `, [id]
+            `,
+            [id]
         );
-        
+
         res.status(200).json();
     } catch (err) {
-        console.error(err)
+        console.error(err);
     }
-   
+
     res.status(200).json();
 });
+
+// AUTH ROUTES
+app.get('/failed', (req, res) => {
+    res.send('You failed to log in');
+});
+
+app.get(
+    '/auth/google',
+    passport.authenticate('google', { scope: ['profile'] })
+);
+
+app.get(
+    '/auth/google/callback',
+    passport.authenticate('google', { failureRedirect: '/failed' }),
+    function (req, res) {
+        // Successful authentication, redirect home.
+        res.redirect('http://localhost:3000');
+    }
+);
+
+app.get('/logout', (req, res) => {
+    req.session = null;
+    req.logout();
+    res.redirect('http://localhost:3000');
+});
+
+app.get('/loggedin', (req, res) => {
+    if (req.user) {
+        res.json(true)
+    } else {
+        res.json(false)
+    }
+})
+
 
 app.listen(3001, () => {
     console.log('server up on port 3001');
