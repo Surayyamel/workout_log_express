@@ -26,7 +26,7 @@ app.use(
     express.json()
 );
 
-app.get('/workout/:id/:date', isLoggedIn, async (req, res) => {
+app.get('/workout/:date', isLoggedIn, async (req, res) => {
     try {
         const { date } = req.params;
         const id = req.user.id;
@@ -83,16 +83,49 @@ app.get('/workout/:id/:date', isLoggedIn, async (req, res) => {
     }
 });
 
-app.post('/workout/:id/:date', isLoggedIn, async (req, res) => {
+app.get('/workout/:date/name', isLoggedIn, async (req, res) => {
     try {
-        const { id, date } = req.params;
+        const workoutName = await pool.query(
+            `
+                SELECT name
+                FROM workout_names
+                WHERE user_id = $1 AND workout_date = $2
+            `,
+            [req.user.id, req.params.date]
+        );
+
+        res.status(200).json(workoutName.rows[0] || 'No name');
+    } catch (error) {
+        console.log(error);
+    }
+});
+
+app.post('/workout/:date/name', isLoggedIn, async (req, res) => {
+    const { date, name } = req.body;
+    // DO I NEED TO RETURN THIS NAME??
+    const workoutName = await pool.query(
+        `
+        INSERT INTO workout_names (user_id, name, workout_date)
+        VALUES ($1, $2, $3)
+        RETURNING name
+    `,
+        [req.user.id, name, date]
+    );
+
+    res.status(200).json(workoutName.rows[0].name);
+});
+
+app.post('/workout/:date', isLoggedIn, async (req, res) => {
+    try {
+        const { date } = req.params;
+        const id = req.user.id;
 
         const exercise = await pool.query(
             `
             INSERT INTO exercise (user_id, created_at, name, sets)
-            VALUES (1, $1, $2, $3) RETURNING id;
+            VALUES ($1, $2, $3, $4) RETURNING id;
             `,
-            [date, req.body.exerciseName, req.body.numberOfSets]
+            [id, date, req.body.exerciseName, req.body.numberOfSets]
         );
 
         const exerciseId = exercise.rows[0].id;
@@ -108,25 +141,29 @@ app.post('/workout/:id/:date', isLoggedIn, async (req, res) => {
             }
         }
 
-        weight.forEach((weight) => {
-            pool.query(
+        for (const element of weight) {
+            const intWeight = parseInt(element);
+            await pool.query(
                 `
                 INSERT INTO weight (weight, exercise_id)
                 VALUES ($1, $2)
+                RETURNING id
                 `,
-                [weight, exerciseId]
+                [intWeight, exerciseId]
             );
-        });
+        }
 
-        reps.forEach((rep) => {
-            pool.query(
+        for (const element of reps) {
+            const intRep = parseInt(element);
+            await pool.query(
                 `
                 INSERT INTO reps (reps, exercise_id)
                 VALUES ($1, $2)
+                RETURNING id
                 `,
-                [rep, exerciseId]
+                [intRep, exerciseId]
             );
-        });
+        }
 
         res.status(200).json();
     } catch (err) {
@@ -134,10 +171,28 @@ app.post('/workout/:id/:date', isLoggedIn, async (req, res) => {
     }
 });
 
-app.put('/workout/:id/:date', isLoggedIn, async (req, res) => {
+app.put('/workout/:date/name', isLoggedIn, async (req, res) => {
+    try {
+        const { name, date } = req.body;
+        const newName = await pool.query(
+            `
+                UPDATE workout_names
+                SET name = $1
+                WHERE user_id = $2 AND workout_date = $3
+                RETURNING name
+            `,
+            [name, req.user.id, date]
+        );
+
+        res.status(200).json(newName.rows[0]);
+    } catch (error) {
+        console.log(error);
+    }
+});
+
+app.put('/workout/:date', isLoggedIn, async (req, res) => {
     try {
         const { id, exerciseName, numberOfSets } = req.body;
-
         // The reps and weight from the request body
         const reps = [];
         const weight = [];
@@ -247,7 +302,7 @@ app.put('/workout/:id/:date', isLoggedIn, async (req, res) => {
             [exerciseName, numberOfSets, id]
         );
 
-        res.status(200).json();
+        res.status(200).json('updated');
     } catch (err) {
         console.error(err);
     }
@@ -272,6 +327,26 @@ app.delete('/workout/:id', isLoggedIn, async (req, res) => {
     res.status(200).json();
 });
 
+// DELETE ROUTE FOR WORKOUT NAME
+app.delete('/workout/:date/name', isLoggedIn, async (req, res) => {
+    try {
+        const { id } = req.user;
+        const { date } = req.params;
+
+        await pool.query(
+            `
+                DELETE FROM workout_names
+                WHERE user_id = $1 AND workout_date = $2
+            `,
+            [id, date]
+        );
+        res.status(200).json('deleted');
+    } catch (error) {
+        console.error(error);
+    }
+});
+
+// CREATE NEW FILE FOR THESE
 // AUTH ROUTES
 app.get('/failed', (req, res) => {
     res.send('You failed to log in');
@@ -299,12 +374,11 @@ app.get('/logout', (req, res) => {
 
 app.get('/loggedin', (req, res) => {
     if (req.user) {
-        res.json(true)
+        res.json(true);
     } else {
-        res.json(false)
+        res.json(false);
     }
-})
-
+});
 
 app.listen(3001, () => {
     console.log('server up on port 3001');
