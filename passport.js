@@ -1,7 +1,9 @@
 require('dotenv').config();
+const app = require('./index');
 const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const pool = require('./db');
+
+const Strategy = require('passport-google-oauth20').Strategy;
 
 // called as cb once user id found/created in DB
 passport.serializeUser(function (user, done) {
@@ -25,7 +27,7 @@ passport.deserializeUser(async function (id, done) {
 });
 
 passport.use(
-    new GoogleStrategy(
+    new Strategy(
         {
             clientID: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
@@ -35,6 +37,7 @@ passport.use(
         // Triggered once user logs in
         async function (accessToken, refreshToken, profile, cb) {
             try {
+                // Find or create user
                 await pool.query(
                     `
                         INSERT INTO users (display_name, google_id)
@@ -44,7 +47,7 @@ passport.use(
                     `,
                     [profile.displayName, profile.id.toString()]
                 );
-    
+
                 const requestedUser = await pool.query(
                     `
                         SELECT id, display_name
@@ -54,15 +57,13 @@ passport.use(
                     `,
                     [profile.id.toString()]
                 );
-    
-                const user = requestedUser.rows[0];
-    
-                return cb(null, user);
 
+                const user = requestedUser.rows[0];
+
+                return cb(null, user);
             } catch (error) {
                 console.log(error.message);
             }
-            
         }
     )
 );

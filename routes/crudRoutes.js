@@ -1,7 +1,10 @@
-const express = require('express');
 const router = require('express').Router();
 const pool = require('../db');
 const isLoggedIn = require('../middleware/isLoggedIn');
+
+router.get('/test', async (req, res) => {
+    res.status(200).json('yes');
+});
 
 router.get('/workout/:date', isLoggedIn, async (req, res) => {
     try {
@@ -55,8 +58,8 @@ router.get('/workout/:date', isLoggedIn, async (req, res) => {
         sortData(exercise);
 
         res.status(200).json(workout);
-    } catch (err) {
-        console.error('THIS ERROR IS FROM THE GET CATCH BLOCK ', err);
+    } catch (error) {
+        console.error('THIS ERROR IS FROM THE GET CATCH BLOCK ', error);
     }
 });
 
@@ -73,7 +76,7 @@ router.get('/workout/:date/name', isLoggedIn, async (req, res) => {
 
         res.status(200).json(workoutName.rows[0] || 'No name');
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 });
 
@@ -89,7 +92,8 @@ router.get('/workout/:date/filled', isLoggedIn, async (req, res) => {
             SELECT workout_date 
             FROM workout_names
             WHERE user_id = $1
-            `, [id]
+            `,
+            [id]
         );
 
         const datesArray = filledDates.rows.map((date) => {
@@ -104,7 +108,7 @@ router.get('/workout/:date/filled', isLoggedIn, async (req, res) => {
 
 router.post('/workout/:date/name', isLoggedIn, async (req, res) => {
     const { date, name } = req.body;
-    // DO I NEED TO RETURN THIS NAME??
+
     const workoutName = await pool.query(
         `
         INSERT INTO workout_names (user_id, name, workout_date)
@@ -114,7 +118,7 @@ router.post('/workout/:date/name', isLoggedIn, async (req, res) => {
         [req.user.id, name, date]
     );
 
-    res.status(200).json(workoutName.rows[0].name);
+    res.status(201).json(workoutName.rows[0].name);
 });
 
 router.post('/workout/:date', isLoggedIn, async (req, res) => {
@@ -167,7 +171,7 @@ router.post('/workout/:date', isLoggedIn, async (req, res) => {
             );
         }
 
-        res.status(200).json();
+        res.status(201).json();
     } catch (err) {
         console.error(err);
     }
@@ -186,7 +190,7 @@ router.put('/workout/:date/name', isLoggedIn, async (req, res) => {
             [name, req.user.id, date]
         );
 
-        res.status(200).json(newName.rows[0]);
+        res.status(201).json(newName.rows[0]);
     } catch (error) {
         console.log(error);
     }
@@ -209,7 +213,7 @@ router.put('/workout/:date', isLoggedIn, async (req, res) => {
         }
 
         //UPDATING THE REPS
-        // Grabbing the IDs of the reps we need to UPDATE
+        // Grabbing the IDs of the reps we need to update
         const repsId = await pool.query(
             `
             SELECT id
@@ -236,8 +240,8 @@ router.put('/workout/:date', isLoggedIn, async (req, res) => {
             );
         }
 
-        // UPDATING THE weight
-        // Grabbing the IDs of the weights we need to UPDATE
+        // UPDATING THE WEIGHT
+        // Grabbing the IDs of the weights we need to update
         const weightsId = await pool.query(
             `
                 SELECT id
@@ -304,13 +308,14 @@ router.put('/workout/:date', isLoggedIn, async (req, res) => {
             [exerciseName, numberOfSets, id]
         );
 
-        res.status(200).json('updated');
+        res.status(201).json('updated');
     } catch (err) {
         console.error(err);
     }
 });
 
-router.delete('/workout/:id', isLoggedIn, async (req, res) => {
+router.delete('/workout', isLoggedIn, async (req, res) => {
+    // exercise id
     const { id } = req.body;
     try {
         await pool.query(

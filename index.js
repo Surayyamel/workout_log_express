@@ -29,7 +29,4 @@ app.use(
 app.use(authRoutes);
 app.use(crudRoutes);
 
-
-app.listen(3001, () => {
-    console.log('server up on port 3001');
-});
+module.exports = app;
