@@ -22,7 +22,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use(
-    cors({ credentials: true, origin: 'http://localhost:3000' }),
+    cors({ credentials: true, origin: 'https://fenton-workout-log-server.herokuapp.com' }),
     express.json()
 );
 
