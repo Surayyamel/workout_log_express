@@ -5,7 +5,7 @@ const pool = require('./db');
 
 const Strategy = require('passport-google-oauth20').Strategy;
 
-// called as cb once user id found/created in DB
+// Called as cb once user id found/created in DB
 passport.serializeUser(function (user, done) {
     // Just pass the ID to make the cookie smaller
     done(null, user.id);

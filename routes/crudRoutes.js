@@ -6,6 +6,24 @@ router.get('/test', async (req, res) => {
     res.status(200).json('yes');
 });
 
+const sortData = (data, workout) => {
+    //if exercise id doesn't exist add it to workout object with id and name, if it does push reps and weight to arrays
+    data.reps.map((obj) => {
+        workout[obj.id]
+            ? workout[obj.id].reps.push(obj.reps)
+            : (workout[obj.id] = {
+                  name: obj.name,
+                  sets: obj.sets,
+                  reps: [obj.reps],
+              });
+    });
+    data.weight.map((obj) => {
+        workout[obj.id].weight
+            ? workout[obj.id].weight.push(obj.weight)
+            : (workout[obj.id].weight = [obj.weight]);
+    });
+};
+
 router.get('/workout/:date', isLoggedIn, async (req, res) => {
     try {
         const { date } = req.params;
@@ -31,31 +49,14 @@ router.get('/workout/:date', isLoggedIn, async (req, res) => {
 
         const exercise = {
             reps: exerciseReps.rows,
-            weight: exerciseWeight.rows,
+            weight: exerciseWeight.rows
         };
 
         const workout = {};
 
-        const sortData = (data) => {
-            //if exercise id doesn't exsist add it with id and name, if it does push reps and weight to arrays
-            data.reps.map((obj) => {
-                workout[obj.id]
-                    ? workout[obj.id].reps.push(obj.reps)
-                    : (workout[obj.id] = {
-                          name: obj.name,
-                          sets: obj.sets,
-                          reps: [obj.reps],
-                      });
-            });
-            // SOMETIMES ERROR -> Cannot read property 'weight' of undefined.. But it fetches correctly?
-            data.weight.map((obj) => {
-                workout[obj.id].weight
-                    ? workout[obj.id].weight.push(obj.weight)
-                    : (workout[obj.id].weight = [obj.weight]);
-            });
-        };
+        sortData(exercise, workout);
 
-        sortData(exercise);
+        console.log(workout)
 
         res.status(200).json(workout);
     } catch (error) {
@@ -102,7 +103,7 @@ router.get('/workout/:date/filled', isLoggedIn, async (req, res) => {
 
         res.status(200).json(datesArray);
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 });
 
@@ -353,4 +354,4 @@ router.delete('/workout/:date/name', isLoggedIn, async (req, res) => {
     }
 });
 
-module.exports = router;
+module.exports = {crudRoutes: router, sortData};
