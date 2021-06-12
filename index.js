@@ -9,6 +9,8 @@ require('./passport');
 
 const app = express();
 
+const originURL = process.env.ORIGIN_URL;
+
 app.use(
     cookieSession({
         name: 'workout-log-session',
@@ -22,7 +24,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use(
-    cors({ credentials: true, origin: 'https://fenton-workout-log-server.herokuapp.com' }),
+    cors({ credentials: true, origin: 'http://localhost:3000' }),
     express.json()
 );
 

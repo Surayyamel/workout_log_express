@@ -56,7 +56,7 @@ router.get('/workout/:date', isLoggedIn, async (req, res) => {
 
         sortData(exercise, workout);
 
-        console.log(workout)
+        //console.log(workout)
 
         res.status(200).json(workout);
     } catch (error) {

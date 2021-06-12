@@ -1,14 +1,15 @@
 const Pool = require('pg').Pool;
 require('dotenv').config();
 
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false,
-    },
-});
+//let pool;
 
-module.exports = pool;
+const pool = new Pool({
+    user: 'surayyafenton',
+    password: process.env.DB_PASSWORD,
+    host: 'localhost',
+    port: 5432,
+    database: 'workout',
+});
 
 // if (process.env.NODE_ENV === 'development') {
 //     pool = new Pool({
@@ -26,5 +27,13 @@ module.exports = pool;
 //         port: 2345,
 //         database: 'workout_test',
 //     });
-// } else {
-//}
+// } else if (process.env.NODE_ENV === 'production') {
+//     pool = new Pool({
+//         connectionString: process.env.DATABASE_URL,
+//         ssl: {
+//             rejectUnauthorized: false,
+//         },
+//     });
+// }
+
+module.exports = pool;

@@ -4,6 +4,7 @@ const passport = require('passport');
 const pool = require('./db');
 
 const Strategy = require('passport-google-oauth20').Strategy;
+const originURL = process.env.ORIGIN_URL;
 
 // Called as cb once user id found/created in DB
 passport.serializeUser(function (user, done) {
@@ -31,7 +32,7 @@ passport.use(
         {
             clientID: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            callbackURL: 'https://fenton-workout-log-server.herokuapp.com/auth/google/callback',
+            callbackURL: `${originURL}/auth/google/callback`
         },
 
         // Triggered once user logs in
