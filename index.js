@@ -24,7 +24,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use(
-    cors({ credentials: true, origin: 'http://localhost:3000' }),
+    cors({ credentials: true, origin: 'https://sf-workout-log.herokuapp.com/' }),
     express.json()
 );
 
