@@ -22,7 +22,7 @@ if (process.env.NODE_ENV === 'development') {
     });
 } else if (process.env.NODE_ENV === 'production') {
     pool = new Pool({
-        connectionString: process.env.DATABASE_URL,
+        connectionString: process.env.DATABASE_URL_2,
         ssl: {
             rejectUnauthorized: false,
         },
