@@ -26,7 +26,7 @@ app.use(passport.session());
 app.use(
     cors({
         credentials: true,
-        origin: '*',
+        origin: 'https://sf-workout-log.herokuapp.com',
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     }),
     express.json()
