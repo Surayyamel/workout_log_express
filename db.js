@@ -1,39 +1,32 @@
-const Pool = require('pg').Pool;
+const {Pool, Client} = require('pg');
 require('dotenv').config();
 
-//let pool;
+let pool;
 
-const pool = new Pool({
-    user: 'surayyafenton',
-    password: process.env.DB_PASSWORD,
-    host: 'localhost',
-    port: 5432,
-    database: 'workout',
-});
 
-// if (process.env.NODE_ENV === 'development') {
-//     pool = new Pool({
-//         user: 'surayyafenton',
-//         password: process.env.DB_PASSWORD,
-//         host: 'localhost',
-//         port: 5432,
-//         database: 'workout',
-//     });
-// } else if (process.env.NODE_ENV === 'test') {
-//     pool = new Pool({
-//         user: 'surayyafenton',
-//         password: process.env.DB_PASSWORD,
-//         host: 'localhost',
-//         port: 2345,
-//         database: 'workout_test',
-//     });
-// } else if (process.env.NODE_ENV === 'production') {
-//     pool = new Pool({
-//         connectionString: process.env.DATABASE_URL,
-//         ssl: {
-//             rejectUnauthorized: false,
-//         },
-//     });
-// }
+if (process.env.NODE_ENV === 'development') {
+    pool = new Pool({
+        user: 'surayyafenton',
+        password: process.env.DB_PASSWORD,
+        host: 'localhost',
+        port: 5432,
+        database: 'workout',
+    });
+} else if (process.env.NODE_ENV === 'test') {
+    pool = new Pool({
+        user: 'surayyafenton',
+        password: process.env.DB_PASSWORD,
+        host: 'localhost',
+        port: 2345,
+        database: 'workout_test',
+    });
+} else if (process.env.NODE_ENV === 'production') {
+    pool = new Pool({
+        connectionString: process.env.DATABASE_URL,
+        ssl: {
+            rejectUnauthorized: false,
+        },
+    });
+}
 
 module.exports = pool;
