@@ -3,7 +3,7 @@ const cors = require('cors');
 const passport = require('passport');
 const cookieSession = require('cookie-session');
 const authRoutes = require('./routes/authRoutes');
-const {crudRoutes} = require('./routes/crudRoutes');
+const { crudRoutes } = require('./routes/crudRoutes');
 // Passport config
 require('./passport');
 
@@ -24,7 +24,11 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use(
-    cors({ credentials: true, origin: 'https://sf-workout-log.herokuapp.com/' }),
+    cors({
+        credentials: true,
+        origin: '*',
+        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    }),
     express.json()
 );
 
