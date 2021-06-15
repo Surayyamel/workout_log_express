@@ -22,6 +22,7 @@ router.get(
 );
 
 router.get('/logout', (req, res) => {
+    console.log('logging out')
     req.session = null;
     req.logout();
     res.redirect(origin);

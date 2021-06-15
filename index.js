@@ -16,10 +16,8 @@ app.use(
         name: 'sf-workout-log-session',
         maxAge: 24 * 60 * 60 * 1000,
         keys: ['randomstring'],
-        secure: true,
-        sameSite: 'none',
-        httpOnly: true,
-        domain: process.env.ORIGIN_URL
+        // secure: true,
+        // sameSite: 'none',
     })
 );
 
