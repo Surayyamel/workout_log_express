@@ -16,6 +16,8 @@ app.use(
         name: 'workout-log-session',
         maxAge: 24 * 60 * 60 * 1000,
         keys: ['randomstring'],
+        secure: true,
+        sameSite: 'none'
     })
 );
 
