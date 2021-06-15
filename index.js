@@ -9,7 +9,7 @@ require('./passport');
 
 const app = express();
 
-const originURL = process.env.ORIGIN_URL;
+const origin = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://sf-workout-log.herokuapp.com';
 
 app.use(
     cookieSession({
@@ -26,7 +26,7 @@ app.use(passport.session());
 app.use(
     cors({
         credentials: true,
-        origin: 'https://sf-workout-log.herokuapp.com',
+        origin: origin,
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     }),
     express.json()
