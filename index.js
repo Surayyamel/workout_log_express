@@ -11,16 +11,15 @@ const app = express();
 
 const origin = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://sf-workout-log.herokuapp.com';
 
-app.set ('trust proxy', 1);
-
 app.use(
     cookieSession({
-        name: 'workout-log-session',
+        name: 'sf-workout-log-session',
         maxAge: 24 * 60 * 60 * 1000,
         keys: ['randomstring'],
         secure: true,
         sameSite: 'none',
-        httpOnly: true
+        httpOnly: true,
+        domain: process.env.ORIGIN_URL
     })
 );
 
