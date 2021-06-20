@@ -22,7 +22,6 @@ router.get(
 );
 
 router.get('/logout', (req, res) => {
-    console.log('logging out')
     req.session = null;
     req.logout();
     res.redirect(origin);
@@ -30,9 +29,9 @@ router.get('/logout', (req, res) => {
 
 router.get('/loggedin', (req, res) => {
     if (req.user) {
-        res.json(true);
+        res.json("in");
     } else {
-        res.json(false);
+        res.json("out");
     }
 });
 

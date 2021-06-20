@@ -112,8 +112,14 @@ router.get('/workout/:date/filled', isLoggedIn, async (req, res) => {
             return date.created_at;
         });
 
+        // Convert ISO timestamp to Date object to string so Calendar date comparaison succeeds
+        const datesFromStamps = datesArray.map((date) => {
+            return String(new Date(date)).substring(0, 15);
+        });
+        
+
         client.end();
-        res.status(200).json(datesArray);
+        res.status(200).json(datesFromStamps);
     } catch (error) {
         console.error(error);
     }
