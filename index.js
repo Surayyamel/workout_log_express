@@ -9,8 +9,6 @@ require('./passport');
 
 const app = express();
 
-const origin = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://sf-workout-log.herokuapp.com';
-
 // for Heroku hosting
 app.set('trust proxy', 1);
 
@@ -31,7 +29,7 @@ app.use(passport.session());
 app.use(
     cors({
         credentials: true,
-        origin: origin,
+        origin: process.env.FRONTEND_URL,
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     }),
     express.json()

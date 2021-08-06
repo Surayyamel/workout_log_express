@@ -2,24 +2,22 @@ require('dotenv').config();
 
 let db;
 
-console.log(process.env.NODE_ENV);
-
-if (process.env.NODE_ENV === 'development') {
+if (process.env.DB === 'dev') {
     db = {
         user: 'surayyafenton',
         password: process.env.DB_PASSWORD,
         host: 'localhost',
         port: 5432,
         database: 'workout',
-    };
-} else if (process.env.NODE_ENV === 'test') {
-    db = {
-        user: 'surayyafenton',
-        password: process.env.DB_PASSWORD,
-        host: 'localhost',
-        port: 2345,
-        database: 'workout_test',
-    };
+   };
+// } else if (process.env.NODE_ENV === 'test') {
+//     db = {
+//         user: 'surayyafenton',
+//         password: process.env.DB_PASSWORD,
+//         host: 'localhost',
+//         port: 2345,
+//         database: 'workout_test',
+// };
 } else {
     db = {
         connectionString: process.env.DATABASE_URL,
@@ -27,11 +25,11 @@ if (process.env.NODE_ENV === 'development') {
             rejectUnauthorized: false,
         },
     };
-}
+ }
 
 module.exports = db;
 
-// Removed pooling for Heroku
+// Removed pooling
 
 // if (true) {
 //     pool = new Pool({
