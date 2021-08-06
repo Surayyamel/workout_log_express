@@ -40,14 +40,3 @@ it('should sort the requested reps and weight rows into an object containing one
     expect(workout['344'].sets).toBe(1);
     expect(workout['343'].weight.length).toBe(2)
 });
-
-
-
-
-
-
-
-
-// Mock the login strategy?
-
-// Drop, create and fill test DB before all tests?

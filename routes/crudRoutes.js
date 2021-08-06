@@ -7,6 +7,7 @@ router.get('/test', async (req, res) => {
     res.status(200).json('yes');
 });
 
+// Declared globally to import into test file
 const sortData = (data, workout) => {
     //if exercise id doesn't exist add it to workout object with id and name, if it does push reps and weight to arrays
     data.reps.map((obj) => {
