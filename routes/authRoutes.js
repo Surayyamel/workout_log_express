@@ -6,12 +6,12 @@ router.get('/failed', (req, res) => {
 });
 
 router.get(
-    '/auth/google',
+    '/auth/google', authLimiter,
     passport.authenticate('google', { scope: ['profile'] })
 );
  
 router.get(
-    '/auth/google/callback',
+    '/auth/google/callback', authLimiter,
     passport.authenticate('google', { failureRedirect: '/failed' }),
     function (req, res) {
         // Successful authentication, redirect home.
