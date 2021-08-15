@@ -7,10 +7,10 @@ it('Testing to see if Jest works', () => {
     expect(1).toBe(1);
 });
 
-it('Testing supertest', async () => {
-    const response = await request(app).get('/test');
-    expect(response.statusCode).toBe(200);
-});
+// it('Testing supertest', async () => {
+//     const response = await request(app).get('/test');
+//     expect(response.statusCode).toBe(200);
+// });
 
 it('Does not GET workouts if not logged in', async () => {
     const response = await request(app).get('/workout/2021-05-21');

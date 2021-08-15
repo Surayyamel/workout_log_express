@@ -4,12 +4,6 @@ const router = require('express').Router();
 const isLoggedIn = require('../middleware/isLoggedIn');
 const db = require('../db');
 
-router.get('/test', async (req, res) => {
-    res.status(200).json('yes');
-});
-
-// Declared globally to import into test file
-
 
 router.get('/workout/:date', isLoggedIn, async (req, res) => {
     try {
