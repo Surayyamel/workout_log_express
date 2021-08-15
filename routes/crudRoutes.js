@@ -261,12 +261,10 @@ router.put('/workout/name', isLoggedIn, async (req, res) => {
         const client = new Client(db);
         client.connect();
 
-        console.log(req.body)
-
         const { name, date } = req.body;
         const { id } = req.user;
 
-        if (!validator.isDate(date) || !validator.isAlphanumeric(exerciseName.replace(/\s/g, ''))) {
+        if (!validator.isDate(date) || !validator.isAlphanumeric(name.replace(/\s/g, ''))) {
             res.status(400).json('Bad request');
             return;
         }
@@ -295,7 +293,7 @@ router.put('/workout', isLoggedIn, async (req, res) => {
 
         const { id, exerciseName, numberOfSets } = req.body;
 
-        if (!validator.isDate(date) || !validator.isAlphanumeric(exerciseName.replace(/\s/g, '')) || !validator.isInt(numberOfSets)) {
+        if (!isNaN(id) || !validator.isAlphanumeric(exerciseName.replace(/\s/g, '')) || !isNaN(numberOfSets)) {
             res.status(400).json('Bad request');
             return;
         }
