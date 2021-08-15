@@ -292,8 +292,9 @@ router.put('/workout', isLoggedIn, async (req, res) => {
         client.connect();
 
         const { id, exerciseName, numberOfSets } = req.body;
+        console.log(!isNaN(id), !isNaN(numberOfSets))
 
-        if (!isNaN(id) || !validator.isAlphanumeric(exerciseName.replace(/\s/g, '')) || !isNaN(numberOfSets)) {
+        if (isNaN(id) || !validator.isAlphanumeric(exerciseName.replace(/\s/g, '')) || isNaN(numberOfSets)) {
             res.status(400).json('Bad request');
             return;
         }
