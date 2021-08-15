@@ -9,24 +9,7 @@ router.get('/test', async (req, res) => {
 });
 
 // Declared globally to import into test file
-const sortData = (data, workout) => {
-    //if exercise id doesn't exist add it to workout object with id and name, if it does push reps and weight to arrays
-    data.reps.map((obj) => {
-        workout[obj.id]
-            ? workout[obj.id].reps.push(obj.reps)
-            : (workout[obj.id] = {
-                  name: obj.name,
-                  sets: obj.sets,
-                  reps: [obj.reps],
-              });
-    });
-    data.weight.map((obj) => {
-        // cannot read weight of undefined error?
-        workout[obj.id].weight
-            ? workout[obj.id].weight.push(obj.weight)
-            : (workout[obj.id].weight = [obj.weight]);
-    });
-};
+
 
 router.get('/workout/:date', isLoggedIn, async (req, res) => {
     try {
@@ -66,6 +49,26 @@ router.get('/workout/:date', isLoggedIn, async (req, res) => {
 
         const workout = {};
 
+        console.log(exercise)
+
+        const sortData = (data, workout) => {
+            //if exercise id doesn't exist add it to workout object with id and name, if it does push reps and weight to arrays
+            data.reps.map((obj) => {
+                workout[obj.id]
+                    ? workout[obj.id].reps.push(obj.reps)
+                    : (workout[obj.id] = {
+                          name: obj.name,
+                          sets: obj.sets,
+                          reps: [obj.reps],
+                      });
+            });
+            data.weight.map((obj) => {
+                // cannot read weight of undefined error?
+                workout[obj.id].weight
+                    ? workout[obj.id].weight.push(obj.weight)
+                    : (workout[obj.id].weight = [obj.weight]);
+            });
+        };
         sortData(exercise, workout);
 
         client.end();
@@ -451,5 +454,4 @@ router.delete('/workout/name/:date', isLoggedIn, async (req, res) => {
     }
 });
 
-// Exporting sortData to import into test file
-module.exports = { crudRoutes: router, sortData };
+module.exports = { crudRoutes: router };
