@@ -1,4 +1,5 @@
-const {Client}  = require('pg');
+const { Client } = require('pg');
+const validator = require('validator');
 const router = require('express').Router();
 const isLoggedIn = require('../middleware/isLoggedIn');
 const db = require('../db');
@@ -20,6 +21,7 @@ const sortData = (data, workout) => {
               });
     });
     data.weight.map((obj) => {
+        // cannot read weight of undefined error?
         workout[obj.id].weight
             ? workout[obj.id].weight.push(obj.weight)
             : (workout[obj.id].weight = [obj.weight]);
@@ -28,11 +30,16 @@ const sortData = (data, workout) => {
 
 router.get('/workout/:date', isLoggedIn, async (req, res) => {
     try {
-        const client = new Client(db)
+        const client = new Client(db);
         client.connect();
 
         const { date } = req.params;
         const id = req.user.id;
+
+        if (!validator.isDate(date)) {
+            res.status(400).json('Bad request');
+            return;
+        }
 
         const exerciseReps = await client.query(
             `
@@ -71,8 +78,16 @@ router.get('/workout/:date', isLoggedIn, async (req, res) => {
 
 router.get('/workout/:date/name', isLoggedIn, async (req, res) => {
     try {
-        const client = new Client(db)
+        const client = new Client(db);
         client.connect();
+
+        const { date } = req.params;
+        const { id } = req.user;
+
+        if (!validator.isDate(date)) {
+            res.status(400).json('Bad request');
+            return;
+        }
 
         const workoutName = await client.query(
             `
@@ -80,7 +95,7 @@ router.get('/workout/:date/name', isLoggedIn, async (req, res) => {
                 FROM workout_names
                 WHERE user_id = $1 AND workout_date = $2
             `,
-            [req.user.id, req.params.date]
+            [id, date]
         );
 
         client.end();
@@ -92,8 +107,13 @@ router.get('/workout/:date/name', isLoggedIn, async (req, res) => {
 
 router.get('/workout/:date/filled', isLoggedIn, async (req, res) => {
     try {
-        const client = new Client(db)
+        const client = new Client(db);
         client.connect();
+
+        if (!validator.isDate(req.params.date)) {
+            res.status(400).json('Bad request');
+            return;
+        }
 
         const { id } = req.user;
         const filledDates = await client.query(
@@ -117,7 +137,6 @@ router.get('/workout/:date/filled', isLoggedIn, async (req, res) => {
         const datesFromStamps = datesArray.map((date) => {
             return String(new Date(date)).substring(0, 15);
         });
-        
 
         client.end();
         res.status(200).json(datesFromStamps);
@@ -126,43 +145,52 @@ router.get('/workout/:date/filled', isLoggedIn, async (req, res) => {
     }
 });
 
-router.post('/workout/:date/name', isLoggedIn, async (req, res) => {
+router.post('/workout/name', isLoggedIn, async (req, res) => {
     try {
-        const client = new Client(db)
-        client.connect();
-
         const { date, name } = req.body;
 
-        const workoutName = await client.query(
-            `
-        INSERT INTO workout_names (user_id, name, workout_date)
-        VALUES ($1, $2, $3)
-        RETURNING name
-    `,
-            [req.user.id, name, date]
-        );
+        if (validator.isDate(date) && validator.isAlphanumeric(name.replace(/\s/g, ''))) {
+            const client = new Client(db);
+            client.connect();
 
-        client.end();
-        res.status(201).json(workoutName.rows[0].name);
+            const workoutName = await client.query(
+            `
+            INSERT INTO workout_names (user_id, name, workout_date)
+            VALUES ($1, $2, $3)
+            RETURNING name
+            `, 
+            [req.user.id, name, date]
+            );
+
+            client.end();
+            res.status(201).json(workoutName.rows[0].name);
+        } else {
+            res.status(400).json('Bad request');
+        }
     } catch (error) {
         console.error(error);
     }
 });
 
-router.post('/workout/:date', isLoggedIn, async (req, res) => {
+router.post('/workout', isLoggedIn, async (req, res) => {
     try {
-        const client = new Client(db)
+        const client = new Client(db);
         client.connect();
-
-        const { date } = req.params;
+        
+        const { date, exerciseName, numberOfSets } = req.body;
         const id = req.user.id;
+
+        if (!validator.isDate(date) || !validator.isAlphanumeric(exerciseName.replace(/\s/g, '')) || !validator.isInt(numberOfSets)) {
+            res.status(400).json('Bad request');
+            return;
+        }
 
         const exercise = await client.query(
             `
             INSERT INTO exercise (user_id, created_at, name, sets)
             VALUES ($1, $2, $3, $4) RETURNING id;
             `,
-            [id, date, req.body.exerciseName, req.body.numberOfSets]
+            [id, date, exerciseName, numberOfSets]
         );
 
         const exerciseId = exercise.rows[0].id;
@@ -210,12 +238,21 @@ router.post('/workout/:date', isLoggedIn, async (req, res) => {
     }
 });
 
-router.put('/workout/:date/name', isLoggedIn, async (req, res) => {
+router.put('/workout/name', isLoggedIn, async (req, res) => {
     try {
-        const client = new Client(db)
+        const client = new Client(db);
         client.connect();
 
+        console.log(req.body)
+
         const { name, date } = req.body;
+        const { id } = req.user;
+
+        if (!validator.isDate(date) || !validator.isAlphanumeric(exerciseName.replace(/\s/g, ''))) {
+            res.status(400).json('Bad request');
+            return;
+        }
+
         const newName = await client.query(
             `
                 UPDATE workout_names
@@ -223,22 +260,28 @@ router.put('/workout/:date/name', isLoggedIn, async (req, res) => {
                 WHERE user_id = $2 AND workout_date = $3
                 RETURNING name
             `,
-            [name, req.user.id, date]
+            [name, id, date]
         );
 
         client.end();
         res.status(201).json(newName.rows[0]);
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 });
 
-router.put('/workout/:date', isLoggedIn, async (req, res) => {
+router.put('/workout', isLoggedIn, async (req, res) => {
     try {
-        const client = new Client(db)
+        const client = new Client(db);
         client.connect();
 
         const { id, exerciseName, numberOfSets } = req.body;
+
+        if (!validator.isDate(date) || !validator.isAlphanumeric(exerciseName.replace(/\s/g, '')) || !validator.isInt(numberOfSets)) {
+            res.status(400).json('Bad request');
+            return;
+        }
+
         // The reps and weight from the request body
         const reps = [];
         const weight = [];
@@ -357,7 +400,7 @@ router.put('/workout/:date', isLoggedIn, async (req, res) => {
 
 router.delete('/workout', isLoggedIn, async (req, res) => {
     try {
-        const client = new Client(db)
+        const client = new Client(db);
         client.connect();
 
         // exercise id
@@ -379,14 +422,18 @@ router.delete('/workout', isLoggedIn, async (req, res) => {
     res.status(200).json();
 });
 
-// DELETE ROUTE FOR WORKOUT NAME
-router.delete('/workout/:date/name', isLoggedIn, async (req, res) => {
+router.delete('/workout/name/:date', isLoggedIn, async (req, res) => {
     try {
-        const client = new Client(db)
+        const client = new Client(db);
         client.connect();
 
         const { id } = req.user;
         const { date } = req.params;
+
+        if (!validator.isDate(date)) {
+            res.status(400).json('Bad request');
+            return;
+        }
 
         await client.query(
             `
@@ -404,4 +451,5 @@ router.delete('/workout/:date/name', isLoggedIn, async (req, res) => {
     }
 });
 
+// Exporting sortData to import into test file
 module.exports = { crudRoutes: router, sortData };
