@@ -36,14 +36,35 @@ router.get('/workout/:date', isLoggedIn, async (req, res) => {
             [id, date]
         );
 
+        for (let i = 0 ; i < exerciseReps.rows.length; i++) {
+            if (
+            isNaN(exerciseReps.rows[i].id) 
+            || !validator.isAlphanumeric(exerciseReps.rows[i].name.replace(/\s/g, ''))
+            || isNaN(exerciseReps.rows[i].sets)
+            || isNaN(exerciseReps.rows[i].reps)){
+                res.status(500).json('Corrupted data');
+                return;
+            } 
+        }
+
+        for (let i = 0 ; i < exerciseWeight.rows.length; i++) {
+            if (
+            isNaN(exerciseWeight.rows[i].id) 
+            || !validator.isAlphanumeric(exerciseWeight.rows[i].name.replace(/\s/g, ''))
+            || isNaN(exerciseWeight.rows[i].sets)
+            || isNaN(exerciseWeight.rows[i].weight)){
+                res.status(500).json('Corrupted data');
+                return;
+            }
+        }
+
         const exercise = {
             reps: exerciseReps.rows,
             weight: exerciseWeight.rows,
         };
 
-        const workout = {};
 
-        console.log(exercise)
+        const workout = {};
 
         const sortData = (data, workout) => {
             //if exercise id doesn't exist add it to workout object with id and name, if it does push reps and weight to arrays
