@@ -1,5 +1,4 @@
 const express = require('express');
-const helmet = require('helmet');
 const cors = require('cors');
 const passport = require('passport');
 const cookieSession = require('cookie-session');
@@ -13,15 +12,15 @@ const app = express();
 // for Heroku hosting
 app.set('trust proxy', 1);
 
-app.use(helmet());
+app.disable('x-powered-by');
 
 app.use(
     cookieSession({
         name: 'sf-workout-log-session',
         maxAge: 24 * 60 * 60 * 1000,
         keys: ['randomstring'],
-        secure: true,
-        sameSite: 'none',
+        // secure: true,
+        // sameSite: 'none',
     })
 );
 
